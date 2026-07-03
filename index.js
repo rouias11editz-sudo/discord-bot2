@@ -1,45 +1,41 @@
 require('dotenv').config();
 
-const {
-  Client,
-  GatewayIntentBits,
-  REST,
-  Routes,
-  SlashCommandBuilder
-} = require('discord.js');
+const fs = require('fs');
+const path = require('path');
+const { Client, GatewayIntentBits, Collection } = require('discord.js');
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
 
-const commands = [
-  new SlashCommandBuilder()
-    .setName('ping')
-    .setDescription('Replies with Pong!')
-    .toJSON(),
-];
+client.commands = new Collection();
 
-client.once('ready', async () => {
+// Load commands
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`);
+  client.commands.set(command.data.name, command);
+}
+
+client.once('ready', () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
-
-  const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
-
-  try {
-    await rest.put(
-      Routes.applicationCommands(client.user.id),
-      { body: commands }
-    );
-    console.log('✅ Slash commands registered!');
-  } catch (error) {
-    console.error(error);
-  }
 });
 
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
-  if (interaction.commandName === 'ping') {
-    await interaction.reply('🏓 Pong!');
+  const command = client.commands.get(interaction.commandName);
+  if (!command) return;
+
+  try {
+    await command.execute(interaction, client);
+  } catch (err) {
+    console.error(err);
+    await interaction.reply({
+      content: '❌ Error executing command.',
+      ephemeral: true
+    });
   }
 });
 
