@@ -7,7 +7,7 @@ const client = new Client({
 });
 
 client.once('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
+  console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
 client.login(process.env.TOKEN);
