@@ -72,10 +72,10 @@ module.exports = {
       const embed = new EmbedBuilder()
         .setColor('#001F3F')
         .setDescription(
-          `📓 New blist on /${vanity}\n\n` +
-          `📄 Doc: ${link}\n\n` +
-          `🚫 DO NOT JOIN\nServ link: ${vanity}\n\n` +
-          `Blist sent by ${interaction.user}`
+          `woohooo new blist ig on /${vanity}\n\n` +
+          `blist doc: ${link}\n\n` +
+          `dont join the link pls\nServ link: ${vanity}\n\n` +
+          `sent by ${interaction.user}`
         )
         .setTimestamp();
 
@@ -105,7 +105,7 @@ module.exports = {
         try {
           const member = await interaction.guild.members.fetch(id);
           await member.ban({ reason: 'Banned via blist command' });
-          results.push(`✅ Banned: ${id}`);
+          results.push(`✅ poof: ${id}`);
         } catch (err) {
           results.push(`❌ Failed: ${id}`);
         }
