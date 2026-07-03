@@ -1,7 +1,5 @@
 const {
-  SlashCommandBuilder,
-  EmbedBuilder,
-  PermissionFlagsBits
+  SlashCommandBuilder
 } = require('discord.js');
 
 const allowedRoles = [
@@ -18,7 +16,7 @@ module.exports = {
     .setName('blist')
     .setDescription('Blacklist system')
 
-    // POST subcommand
+    // POST
     .addSubcommand(sub =>
       sub.setName('post')
         .setDescription('Post a blist')
@@ -33,20 +31,23 @@ module.exports = {
         .addBooleanOption(opt =>
           opt.setName('ping')
             .setDescription('Ping everyone?')
-            .setRequired(false))
+            .setRequired(false)
+        )
     )
 
-    // BAN subcommand
+    // BAN
     .addSubcommand(sub =>
       sub.setName('ban')
         .setDescription('Ban multiple user IDs')
         .addStringOption(opt =>
           opt.setName('ids')
             .setDescription('User IDs separated by space')
-            .setRequired(true))
+            .setRequired(true)
+        )
     ),
 
   async execute(interaction, client) {
+
     // ROLE CHECK
     const hasRole = interaction.member.roles.cache.some(role =>
       allowedRoles.includes(role.id)
@@ -54,7 +55,7 @@ module.exports = {
 
     if (!hasRole) {
       return interaction.reply({
-        content: '❌ You do not have permission to use this command.',
+        content: ' u do not have permission to use this command.',
         ephemeral: true
       });
     }
@@ -69,26 +70,28 @@ module.exports = {
       const vanity = interaction.options.getString('vanity');
       const ping = interaction.options.getBoolean('ping') || false;
 
-      const embed = new EmbedBuilder()
-        .setColor('#001F3F')
-        .setDescription(
-          `woohooo new blist ig on /${vanity}\n\n` +
-          `blist doc: ${link}\n\n` +
-          `dont join the link pls\nServ link: ${vanity}\n\n` +
-          `sent by ${interaction.user}`
-        )
-        .setTimestamp();
-
       const channel = await client.channels.fetch(blistChannelId);
 
+      let message = '';
+
       if (ping) {
-        await channel.send('@everyone');
+        message += '@everyone\n\n';
       }
 
-      await channel.send({ embeds: [embed] });
+      message +=
+`woohooo new blist ig on /${vanity}
+
+blist doc: ${link}
+
+dont join the link pls
+Serv link: ${vanity}
+
+sent by ${interaction.user}`;
+
+      await channel.send({ content: message });
 
       return interaction.reply({
-        content: '✅ Blist posted successfully.',
+        content: 'blist posted successfully thanks ig.',
         ephemeral: true
       });
     }
@@ -105,8 +108,8 @@ module.exports = {
         try {
           const member = await interaction.guild.members.fetch(id);
           await member.ban({ reason: 'Banned via blist command' });
-          results.push(`✅ poof: ${id}`);
-        } catch (err) {
+          results.push(`✅ Banned: ${id}`);
+        } catch {
           results.push(`❌ Failed: ${id}`);
         }
       }
