@@ -1,66 +1,77 @@
 const OpenAI = require("openai");
 
-const openai = new OpenAI({
+const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 });
 
 async function moderateConfession(text) {
     try {
-        const response = await openai.moderations.create({
-            model: "omni-moderation-latest",
-            input: text
+
+        const response = await client.responses.create({
+            model: "gpt-4.1-mini",
+            input: `
+You are a Discord moderation AI.
+
+Analyze this anonymous confession.
+
+Determine if moderators should be alerted.
+
+Return ONLY valid JSON.
+
+{
+"flagged": true,
+"severity":"LOW",
+"confidence":85,
+"reason":"Possible self harm"
+}
+
+Rules:
+
+Flag if:
+- Credible self harm
+- Suicide risk
+- Threats
+- Hate speech/slurs
+- Grooming
+- Sexual exploitation
+- Violence
+- Criminal activity
+
+DO NOT flag:
+- Normal venting
+- Breakups
+- Depression without danger
+- Swearing
+- Relationship problems
+- General sadness
+
+Severity must be:
+LOW
+MEDIUM
+HIGH
+CRITICAL
+
+Confession:
+
+${text}
+`
         });
 
-        const result = response.results[0];
-        const categories = result.categories;
-        const scores = result.category_scores;
+        const result = JSON.parse(response.output_text);
 
-        let severity = "LOW";
-        let reason = "No issues detected";
-        let confidence = 0;
-
-        const check = (name, score, level) => {
-            if (score > confidence) {
-                confidence = score;
-                reason = name;
-                severity = level;
-            }
-        };
-
-        if (categories.self_harm)
-            check("Possible self-harm", scores.self_harm, "HIGH");
-
-        if (categories.harassment)
-            check("Harassment", scores.harassment, "MEDIUM");
-
-        if (categories.hate)
-            check("Hate Speech / Slurs", scores.hate, "HIGH");
-
-        if (categories.sexual)
-            check("Sexual Content", scores.sexual, "MEDIUM");
-
-        if (categories.violence)
-            check("Violence", scores.violence, "HIGH");
-
-        if (categories.illicit)
-            check("Illegal Activity", scores.illicit, "HIGH");
-
-        return {
-            flagged: result.flagged,
-            severity,
-            reason,
-            confidence: Math.round(confidence * 100)
-        };
+        return result;
 
     } catch (err) {
+
         console.error(err);
 
         return {
             flagged: false,
             severity: "LOW",
-            reason: "Moderation API Error",
-            confidence: 0
+            confidence: 0,
+            reason: "AI unavailable"
         };
+
     }
 }
 
