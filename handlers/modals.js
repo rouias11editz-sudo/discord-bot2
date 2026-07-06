@@ -2,7 +2,8 @@ const {
     EmbedBuilder,
     ActionRowBuilder,
     ButtonBuilder,
-    ButtonStyle
+    ButtonStyle,
+    ChannelType
 } = require("discord.js");
 
 const config = require("../config");
@@ -11,7 +12,95 @@ const { moderateConfession } = require("../utils/ai");
 
 module.exports = async (interaction) => {
 
+    // ==========================================
+    // Anonymous Reply Modal
+    // ==========================================
+
+    if (interaction.customId.startsWith("reply_modal_")) {
+
+        const confessionId = Number(
+            interaction.customId.split("_")[2]
+        );
+
+        const confession = db.getConfession(confessionId);
+
+        if (!confession) {
+
+            return interaction.reply({
+                content: "❌ Confession not found.",
+                ephemeral: true
+            });
+
+        }
+
+        const reply = interaction.fields
+            .getTextInputValue("reply_text")
+            .trim();
+
+        await interaction.deferReply({
+            ephemeral: true
+        });
+
+        const confessionChannel =
+            await interaction.client.channels.fetch(
+                config.confessionChannel
+            );
+
+        const confessionMessage =
+            await confessionChannel.messages.fetch(
+                confession.messageId
+            );
+
+        let thread;
+
+        if (confession.threadId) {
+
+            thread =
+                await interaction.client.channels.fetch(
+                    confession.threadId
+                );
+
+        } else {
+
+            thread = await confessionMessage.startThread({
+                name: `Replies • #${confession.id}`,
+                autoArchiveDuration: 1440
+            });
+
+            db.updateThread(
+                confession.id,
+                thread.id
+            );
+
+        }
+
+        const embed = new EmbedBuilder()
+            .setColor(0x5865F2)
+            .setTitle("💬 Anonymous Reply")
+            .setDescription(reply)
+            .setFooter({
+                text: `Confession #${confession.id}`
+            })
+            .setTimestamp();
+
+        await thread.send({
+            embeds: [embed]
+        });
+
+        return interaction.editReply({
+            content:
+                "✅ Your anonymous reply has been posted."
+        });
+
+    }
+
+    // ==========================================
+    // New Confession Modal
+    // ==========================================
+
     if (interaction.customId !== "confession_modal") return;
+
+    // KEEP THE REST OF YOUR CURRENT CODE BELOW THIS LINE
 
     const text = interaction.fields
         .getTextInputValue("confession_text")
