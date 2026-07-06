@@ -1,29 +1,69 @@
-const { REST, Routes } = require('discord.js');
-require('dotenv').config();
+const { REST, Routes } = require("discord.js");
+const fs = require("fs");
+const path = require("path");
 
-const fs = require('fs');
+require("dotenv").config();
+
+// ==========================
+// Load command files safely
+// ==========================
 
 const commands = [];
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+const commandsPath = path.join(__dirname, "commands");
+
+const commandFiles = fs
+    .readdirSync(commandsPath)
+    .filter(file => file.endsWith(".js"));
 
 for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
-  commands.push(command.data.toJSON());
+    const filePath = path.join(commandsPath, file);
+    const command = require(filePath);
+
+    if (!command.data || !command.data.toJSON) {
+        console.log(`⚠️ Skipping invalid command: ${file}`);
+        continue;
+    }
+
+    commands.push(command.data.toJSON());
 }
 
-const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
+// ==========================
+// REST setup
+// ==========================
+
+const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
+
+// ==========================
+// Deploy commands
+// ==========================
 
 (async () => {
-  try {
-    console.log('⏳ Registering slash commands...');
+    try {
+        console.log("⏳ Clearing old slash commands...");
 
-    await rest.put(
-      Routes.applicationCommands(process.env.CLIENT_ID),
-      { body: commands }
-    );
+        // Clear old commands (important fix)
+        await rest.put(
+            Routes.applicationGuildCommands(
+                process.env.CLIENT_ID,
+                process.env.GUILD_ID
+            ),
+            { body: [] }
+        );
 
-    console.log('✅ Slash commands registered successfully.');
-  } catch (error) {
-    console.error(error);
-  }
+        console.log("⏳ Registering new slash commands...");
+
+        await rest.put(
+            Routes.applicationGuildCommands(
+                process.env.CLIENT_ID,
+                process.env.GUILD_ID
+            ),
+            { body: commands }
+        );
+
+        console.log("✅ Slash commands registered successfully!");
+        console.log(`📦 Loaded commands: ${commands.length}`);
+    } catch (error) {
+        console.error("❌ Error deploying commands:", error);
+    }
 })();
