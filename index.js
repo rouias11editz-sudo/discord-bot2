@@ -10,12 +10,11 @@ const {
 } = require("discord.js");
 
 const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds
-    ]
+    intents: [GatewayIntentBits.Guilds]
 });
 
 client.commands = new Collection();
+
 
 // ==========================
 // Load Commands
@@ -28,16 +27,16 @@ const commandFiles = fs
     .filter(file => file.endsWith(".js"));
 
 for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
+    const command = require(path.join(commandsPath, file));
 
-    if (!command.data || !command.data.name) {
-        console.warn(`⚠️ Skipping invalid command file: ${file}`);
+    if (!command.data || !command.execute) {
+        console.log(`⚠️ Invalid command file skipped: ${file}`);
         continue;
     }
 
     client.commands.set(command.data.name, command);
 }
+
 
 // ==========================
 // Ready Event
@@ -47,6 +46,7 @@ client.once("ready", () => {
     console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
+
 // ==========================
 // Interaction Handler
 // ==========================
@@ -54,10 +54,10 @@ client.once("ready", () => {
 client.on("interactionCreate", async interaction => {
     try {
 
-        // ======================
-        // Slash Commands
-        // ======================
+        // 🔹 Slash Commands
         if (interaction.isChatInputCommand()) {
+
+            console.log("CMD USED:", interaction.commandName);
 
             const command = client.commands.get(interaction.commandName);
 
@@ -71,27 +71,32 @@ client.on("interactionCreate", async interaction => {
             return await command.execute(interaction);
         }
 
-        // ======================
-        // Modals
-        // ======================
+        // 🔹 Modals
         if (interaction.isModalSubmit()) {
+
+            console.log("MODAL USED:", interaction.customId);
+
             const modalHandler = require("./handlers/modals");
             return await modalHandler(interaction);
         }
 
-        // ======================
-        // Buttons
-        // ======================
+        // 🔹 Buttons
         if (interaction.isButton()) {
+
+            console.log("BUTTON USED:", interaction.customId);
+
             const buttonHandler = require("./handlers/buttons");
             return await buttonHandler(interaction);
         }
 
     } catch (err) {
-        console.error("❌ Interaction error:", err);
+
+        console.error("❌ FULL ERROR:");
+        console.error(err);
+        console.error(err?.stack);
 
         const msg = {
-            content: "❌ Something went wrong.",
+            content: "❌ Something went wrong while processing this interaction.",
             ephemeral: true
         };
 
@@ -102,6 +107,7 @@ client.on("interactionCreate", async interaction => {
         }
     }
 });
+
 
 // ==========================
 // Login
