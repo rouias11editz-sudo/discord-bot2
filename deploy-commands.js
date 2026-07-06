@@ -4,10 +4,6 @@ const path = require("path");
 
 require("dotenv").config();
 
-// ==========================
-// Load commands
-// ==========================
-
 const commands = [];
 
 const commandsPath = path.join(__dirname, "commands");
@@ -17,32 +13,24 @@ const commandFiles = fs
     .filter(file => file.endsWith(".js"));
 
 for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
+    const command = require(path.join(commandsPath, file));
 
-    if (!command.data || !command.data.toJSON) {
-        console.log(`⚠️ Skipping invalid command: ${file}`);
-        continue;
-    }
+    if (!command.data || !command.data.toJSON) continue;
 
     commands.push(command.data.toJSON());
 }
 
-// ==========================
-// REST setup
-// ==========================
-
 const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
-
-// ==========================
-// Deploy
-// ==========================
 
 (async () => {
     try {
-        console.log("🧹 Clearing old guild commands...");
+        console.log("🧹 Clearing GLOBAL commands...");
+        await rest.put(
+            Routes.applicationCommands(process.env.CLIENT_ID),
+            { body: [] }
+        );
 
-        // Clear guild commands (fix duplicates)
+        console.log("🧹 Clearing GUILD commands...");
         await rest.put(
             Routes.applicationGuildCommands(
                 process.env.CLIENT_ID,
@@ -51,9 +39,8 @@ const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
             { body: [] }
         );
 
-        console.log("⏳ Registering new slash commands...");
+        console.log("⏳ Registering commands...");
 
-        // Register new commands
         await rest.put(
             Routes.applicationGuildCommands(
                 process.env.CLIENT_ID,
@@ -62,9 +49,8 @@ const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
             { body: commands }
         );
 
-        console.log("✅ Slash commands deployed successfully!");
-        console.log(`📦 Total commands loaded: ${commands.length}`);
-    } catch (error) {
-        console.error("❌ Deploy error:", error);
+        console.log(`✅ Done. Loaded: ${commands.length}`);
+    } catch (err) {
+        console.error("DEPLOY ERROR:", err);
     }
 })();
