@@ -5,7 +5,7 @@ const path = require("path");
 require("dotenv").config();
 
 // ==========================
-// Load command files safely
+// Load commands
 // ==========================
 
 const commands = [];
@@ -35,14 +35,14 @@ for (const file of commandFiles) {
 const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
 // ==========================
-// Deploy commands
+// Deploy
 // ==========================
 
 (async () => {
     try {
-        console.log("⏳ Clearing old slash commands...");
+        console.log("🧹 Clearing old guild commands...");
 
-        // Clear old commands (important fix)
+        // Clear guild commands (fix duplicates)
         await rest.put(
             Routes.applicationGuildCommands(
                 process.env.CLIENT_ID,
@@ -53,6 +53,7 @@ const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
         console.log("⏳ Registering new slash commands...");
 
+        // Register new commands
         await rest.put(
             Routes.applicationGuildCommands(
                 process.env.CLIENT_ID,
@@ -61,9 +62,9 @@ const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
             { body: commands }
         );
 
-        console.log("✅ Slash commands registered successfully!");
-        console.log(`📦 Loaded commands: ${commands.length}`);
+        console.log("✅ Slash commands deployed successfully!");
+        console.log(`📦 Total commands loaded: ${commands.length}`);
     } catch (error) {
-        console.error("❌ Error deploying commands:", error);
+        console.error("❌ Deploy error:", error);
     }
 })();
