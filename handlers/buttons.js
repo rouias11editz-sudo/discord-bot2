@@ -34,6 +34,7 @@ module.exports = async (interaction) => {
         );
 
         return interaction.showModal(modal);
+
     }
 
     // ===========================================
@@ -49,10 +50,12 @@ module.exports = async (interaction) => {
         const confession = db.getConfession(id);
 
         if (!confession) {
+
             return interaction.reply({
                 content: "❌ Confession not found.",
                 ephemeral: true
             });
+
         }
 
         const modal = new ModalBuilder()
@@ -72,6 +75,7 @@ module.exports = async (interaction) => {
         );
 
         return interaction.showModal(modal);
+
     }
 
     // ===========================================
@@ -87,18 +91,21 @@ module.exports = async (interaction) => {
         const confession = db.getConfession(id);
 
         if (!confession) {
+
             return interaction.reply({
                 content: "❌ Confession not found.",
                 ephemeral: true
             });
+
         }
 
-        // Prevent duplicate reports from the same user
-        if (confession.reports?.includes(interaction.user.id)) {
+        if (db.hasReported(id, interaction.user.id)) {
+
             return interaction.reply({
                 content: "⚠️ You have already reported this confession.",
                 ephemeral: true
             });
+
         }
 
         db.addReport(id, interaction.user.id);
@@ -113,25 +120,47 @@ module.exports = async (interaction) => {
 
                 const embed = new EmbedBuilder()
                     .setColor(config.embedColors.HIGH)
-                    .setTitle("🚩 Confession Reported")
+                    .setTitle("🚩 Confession Report")
                     .addFields(
                         {
-                            name: "Confession",
+                            name: "📝 Confession",
                             value: `#${id}`,
                             inline: true
                         },
                         {
-                            name: "Reported By",
+                            name: "👤 Original Author",
+                            value: `<@${confession.userId}>`,
+                            inline: true
+                        },
+                        {
+                            name: "🆔 Author ID",
+                            value: confession.userId,
+                            inline: true
+                        },
+                        {
+                            name: "🚩 Reported By",
                             value: `<@${interaction.user.id}>`,
                             inline: true
                         },
                         {
-                            name: "Reports",
+                            name: "🆔lolll id author id",
+                            value: interaction.user.id,
+                            inline: true
+                        },
+                        {
+                            name: "📊 Reports",
                             value: `${confession.reports.length}`,
                             inline: true
                         },
                         {
-                            name: "Original Confession",
+                            name: "💬 Confession Content",
+                            value:
+                                confession.content.length > 1024
+                                    ? confession.content.slice(0, 1021) + "..."
+                                    : confession.content
+                        },
+                        {
+                            name: "🔗 Original Message",
                             value: `https://discord.com/channels/${interaction.guild.id}/${config.confessionChannel}/${confession.messageId}`
                         }
                     )
