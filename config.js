@@ -14,9 +14,9 @@ module.exports = {
     ],
 
     embedColors: {
-        LOW: 8ee89a,       // Green
-        MEDIUM: d2e362,    // Yellow
-        HIGH: e3a262,      // Orange
-        CRITICAL: e36262   // Red
+        LOW: 0x8EE89A,
+        MEDIUM: 0xD2E362,
+        HIGH: 0xE3A262,
+        CRITICAL: 0xE36262
     }
 };
