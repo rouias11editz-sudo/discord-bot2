@@ -1,65 +1,60 @@
 const OpenAI = require("openai");
 
 const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
+    baseURL: "https://openrouter.ai/api/v1",
+    apiKey: process.env.OPENROUTER_API_KEY,
+    defaultHeaders: {
+        "HTTP-Referer": "https://github.com/rouias11editz-sudo/discord-bot2",
+        "X-OpenRouter-Title": "Cortisol Bot"
+    }
 });
 
 async function moderateConfession(text) {
+
     try {
 
-        const response = await client.responses.create({
-            model: "gpt-4.1-mini",
-            input: `
-You are a Discord moderation AI.
+        const completion = await client.chat.completions.create({
 
-Analyze this anonymous confession.
+            model: "qwen/qwen3-30b-a3b:free",
 
-Determine if moderators should be alerted.
+            messages: [
+                {
+                    role: "system",
+                    content: `You are a Discord moderation AI.
 
 Return ONLY valid JSON.
 
 {
-"flagged": true,
+"flagged":true,
 "severity":"LOW",
-"confidence":85,
+"confidence":80,
 "reason":"Possible self harm"
 }
 
-Rules:
+Flag:
+- suicide only if they plan doing it
+- excessive self harm
+- hate speech towards a group of people
+- threats
+- grooming
+- sexual exploitation
 
-Flag if:
-- Credible self harm
-- Suicide risk
-- Threats
-- Hate speech/slurs
-- Grooming
-- Sexual exploitation
-- Violence
-- Criminal activity
+Do NOT flag:
+- normal venting
+- sadness
+- relationship problems`
+                },
+                {
+                    role: "user",
+                    content: text
+                }
+            ]
 
-DO NOT flag:
-- Normal venting
-- Breakups
-- Depression without danger
-- Swearing
-- Relationship problems
-- General sadness
-
-Severity must be:
-LOW
-MEDIUM
-HIGH
-CRITICAL
-
-Confession:
-
-${text}
-`
         });
 
-        const result = JSON.parse(response.output_text);
-
-        return result;
+        return JSON.parse(
+            completion.choices[0].message.content
+        );
 
     } catch (err) {
 
@@ -73,6 +68,7 @@ ${text}
         };
 
     }
+
 }
 
 module.exports = {
