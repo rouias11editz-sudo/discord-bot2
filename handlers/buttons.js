@@ -7,7 +7,7 @@ const {
 } = require("discord.js");
 
 const db = require("../utils/database");
-const config = require("../config");
+const settings = require("../utils/settings");
 
 module.exports = async (interaction) => {
     if (
@@ -118,14 +118,26 @@ module.exports = async (interaction) => {
 
         try {
 
-            const modChannel = await interaction.client.channels.fetch(
-                config.modAlertChannel
+            const guild = settings.getGuild(interaction.guild.id);
+
+if (!guild.modAlertChannel) {
+
+    return interaction.reply({
+        content: "❌ This server hasn't been configured yet. Run **/confession wizard**.",
+        ephemeral: true
+    });
+
+}
+
+const modChannel = await interaction.client.channels.fetch(
+    guild.modAlertChannel
+);
             );
 
             if (modChannel) {
 
                 const embed = new EmbedBuilder()
-                    .setColor(config.embedColors.HIGH)
+                    .setColor(0xE3A262)
                     .setTitle("🚩 Confession Report")
                     .addFields(
                         {
@@ -167,15 +179,15 @@ module.exports = async (interaction) => {
                         },
                         {
                             name: "🔗 Original Message",
-                            value: `https://discord.com/channels/${interaction.guild.id}/${config.confessionChannel}/${confession.messageId}`
+                            value: `https://discord.com/channels/${interaction.guild.id}/${guild.confessionChannel}/${confession.messageId}`
                         }
                     )
                     .setTimestamp();
 
                 await modChannel.send({
-                    content: config.lowMediumPing
-                        .map(role => `<@&${role}>`)
-                        .join(" "),
+                    content: guild.modRoles
+    .map(role => `<@&${role}>`)
+    .join(" "),
                     embeds: [embed]
                 });
 
