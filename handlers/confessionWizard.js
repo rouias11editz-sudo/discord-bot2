@@ -25,17 +25,17 @@ Press **Save** when finished.`
 
     const confessionChannel = new ChannelSelectMenuBuilder()
         .setCustomId("wizard_confession_channel")
-        .setPlaceholder("📢 Select Confession Channel")
+        .setPlaceholder("Select Confession Channel")
         .addChannelTypes(ChannelType.GuildText);
 
     const modAlert = new ChannelSelectMenuBuilder()
         .setCustomId("wizard_modalert_channel")
-        .setPlaceholder("🚨 Select Moderator Alert Channel")
+        .setPlaceholder("Select Moderator Alert Channel")
         .addChannelTypes(ChannelType.GuildText);
 
     const modRoles = new RoleSelectMenuBuilder()
         .setCustomId("wizard_mod_roles")
-        .setPlaceholder("🛡️ Select Moderator Roles")
+        .setPlaceholder("Select Moderator Roles")
         .setMinValues(1)
         .setMaxValues(10);
 
