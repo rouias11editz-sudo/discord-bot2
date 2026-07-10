@@ -19,9 +19,11 @@ function save(data) {
 }
 
 function getGuild(guildId) {
+
     const data = load();
 
     if (!data[guildId]) {
+
         data[guildId] = {
             confessionChannel: null,
             modAlertChannel: null,
@@ -30,12 +32,22 @@ function getGuild(guildId) {
         };
 
         save(data);
+
     }
 
     return data[guildId];
+
+}
+
+function hasGuild(guildId) {
+
+    const data = load();
+    return !!data[guildId];
+
 }
 
 function setGuild(guildId, settings) {
+
     const data = load();
 
     data[guildId] = {
@@ -46,9 +58,35 @@ function setGuild(guildId, settings) {
     save(data);
 
     return data[guildId];
+
+}
+
+function updateGuild(guildId, key, value) {
+
+    const guild = getGuild(guildId);
+
+    guild[key] = value;
+
+    setGuild(guildId, guild);
+
+    return guild;
+
+}
+
+function resetGuild(guildId) {
+
+    const data = load();
+
+    delete data[guildId];
+
+    save(data);
+
 }
 
 module.exports = {
     getGuild,
-    setGuild
+    hasGuild,
+    setGuild,
+    updateGuild,
+    resetGuild
 };
