@@ -18,15 +18,15 @@ module.exports = {
             sub
                 .setName("wizard")
                 .setDescription("Configure the confession system")
-        )
-
-        .setDefaultMemberPermissions(
-            PermissionFlagsBits.Administrator
         ),
 
     async execute(interaction) {
 
         const sub = interaction.options.getSubcommand();
+
+        // ==========================
+        // Anyone can post
+        // ==========================
 
         if (sub === "post") {
 
@@ -35,7 +35,22 @@ module.exports = {
 
         }
 
+        // ==========================
+        // Admin only
+        // ==========================
+
         if (sub === "wizard") {
+
+            if (
+                !interaction.memberPermissions.has(
+                    PermissionFlagsBits.Administrator
+                )
+            ) {
+                return interaction.reply({
+                    content: "❌ Only server administrators can use this command.",
+                    ephemeral: true
+                });
+            }
 
             const wizard = require("../handlers/confessionWizard");
             return wizard(interaction);
