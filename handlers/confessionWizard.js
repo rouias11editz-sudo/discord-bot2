@@ -10,18 +10,18 @@ const {
 
 module.exports = async (interaction) => {
 
+    await interaction.deferReply({ ephemeral: true });
+
     const embed = new EmbedBuilder()
         .setColor(0x5865F2)
         .setTitle("🛠️ Confession Setup Wizard")
-        .setDescription(
-`Configure your confession system.
+        .setDescription(`Configure your confession system.
 
 🟥 Confession Channel
 🟥 Moderator Alert Channel
 🟥 Moderator Roles
 
-Press **Save** when finished.`
-        );
+Press **Save** when finished.`);
 
     const confessionChannel = new ChannelSelectMenuBuilder()
         .setCustomId("wizard_confession_channel")
@@ -53,15 +53,14 @@ Press **Save** when finished.`
             .setStyle(ButtonStyle.Danger)
     );
 
-    await interaction.reply({
+    await interaction.editReply({
         embeds: [embed],
         components: [
             new ActionRowBuilder().addComponents(confessionChannel),
             new ActionRowBuilder().addComponents(modAlert),
             new ActionRowBuilder().addComponents(modRoles),
             buttons
-        ],
-        ephemeral: true
+        ]
     });
 
 };
