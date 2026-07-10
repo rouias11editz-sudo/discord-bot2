@@ -6,7 +6,7 @@ const {
     ChannelType
 } = require("discord.js");
 
-const config = require("../config");
+const settings = require("../utils/settings");
 const db = require("../utils/database");
 const { moderateConfession } = require("../utils/ai");
 
@@ -41,10 +41,18 @@ module.exports = async (interaction) => {
             ephemeral: true
         });
 
-        const confessionChannel =
-            await interaction.client.channels.fetch(
-                config.confessionChannel
-            );
+        const guild = settings.getGuild(interaction.guild.id);
+
+if (!guild.confessionChannel) {
+    return interaction.editReply({
+        content: "❌ This server has not been configured yet. Run **/confession wizard**."
+    });
+}
+
+const confessionChannel =
+    await interaction.client.channels.fetch(
+        guild.confessionChannel
+    );
 
         const confessionMessage =
             await confessionChannel.messages.fetch(
@@ -164,10 +172,17 @@ module.exports = async (interaction) => {
             .setStyle(ButtonStyle.Danger)
     );
 
-    const channel = await interaction.client.channels.fetch(
-        config.confessionChannel
-    );
+    const guild = settings.getGuild(interaction.guild.id);
 
+if (!guild.confessionChannel) {
+    return interaction.editReply({
+        content: "❌ This server has not been configured yet. Run **/confession wizard**."
+    });
+}
+
+const channel = await interaction.client.channels.fetch(
+    guild.confessionChannel
+);
     if (!channel) {
         return interaction.editReply({
             content: "❌ Confession channel not found."
@@ -193,9 +208,11 @@ if (aiResult.flagged) {
 
     try {
 
-        const modChannel = await interaction.client.channels.fetch(
-            config.modAlertChannel
-        );
+        if (!guild.modAlertChannel) return;
+
+const modChannel = await interaction.client.channels.fetch(
+    guild.modAlertChannel
+);
 
         if (modChannel) {
 
