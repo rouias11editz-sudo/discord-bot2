@@ -1,50 +1,55 @@
-const { get, create } = require("../utils/wizardSessions");
+const sessions = require("../utils/wizardSessions");
 
 module.exports = async (interaction) => {
 
-    const id = interaction.guild.id;
+    let session = sessions.get(interaction.guild.id);
 
-    let session = get(id);
+    if (!session) {
+        session = sessions.create(interaction.guild.id);
+    }
 
-    if (!session)
-        session = create(id);
-
-    // ===========================
+    // ==========================
     // Confession Channel
-    // ===========================
+    // ==========================
 
     if (interaction.customId === "wizard_confession_channel") {
 
-        session.confessionChannel =
-            interaction.values[0];
+        session.confessionChannel = interaction.values[0];
 
-        return interaction.deferUpdate();
+        return interaction.reply({
+            content: "✅ Confession channel selected.",
+            ephemeral: true
+        });
 
     }
 
-    // ===========================
-    // Mod Alert Channel
-    // ===========================
+    // ==========================
+    // Moderator Alert Channel
+    // ==========================
 
     if (interaction.customId === "wizard_modalert_channel") {
 
-        session.modAlertChannel =
-            interaction.values[0];
+        session.modAlertChannel = interaction.values[0];
 
-        return interaction.deferUpdate();
+        return interaction.reply({
+            content: "✅ Moderator alert channel selected.",
+            ephemeral: true
+        });
 
     }
 
-    // ===========================
+    // ==========================
     // Moderator Roles
-    // ===========================
+    // ==========================
 
     if (interaction.customId === "wizard_mod_roles") {
 
-        session.modRoles =
-            interaction.values;
+        session.modRoles = interaction.values;
 
-        return interaction.deferUpdate();
+        return interaction.reply({
+            content: `✅ ${interaction.values.length} moderator role(s) selected.`,
+            ephemeral: true
+        });
 
     }
 
