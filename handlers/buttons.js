@@ -10,6 +10,12 @@ const db = require("../utils/database");
 const config = require("../config");
 
 module.exports = async (interaction) => {
+    if (
+    interaction.customId === "wizard_save" ||
+    interaction.customId === "wizard_cancel"
+) {
+    return require("./wizardButtons")(interaction);
+}
 
     // ===========================================
     // Add Confession
