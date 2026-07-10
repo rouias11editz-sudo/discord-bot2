@@ -3,10 +3,11 @@ const sessions = require("../utils/wizardSessions");
 
 module.exports = async (interaction) => {
 
+    console.log("BUTTON:", interaction.customId);
+
     const session = sessions.get(interaction.guild.id);
-
+    
     if (!session) {
-
         return interaction.reply({
             content: "❌ No setup session found.",
             ephemeral: true
