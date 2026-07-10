@@ -1,36 +1,46 @@
 const {
     SlashCommandBuilder,
-    ActionRowBuilder,
-    ButtonBuilder,
-    ButtonStyle,
-    ModalBuilder,
-    TextInputBuilder,
-    TextInputStyle
+    PermissionFlagsBits
 } = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("confession")
-        .setDescription("Send an anonymous confession"),
+        .setDescription("Anonymous confession system")
+
+        .addSubcommand(sub =>
+            sub
+                .setName("post")
+                .setDescription("Create an anonymous confession")
+        )
+
+        .addSubcommand(sub =>
+            sub
+                .setName("wizard")
+                .setDescription("Configure the confession system")
+        )
+
+        .setDefaultMemberPermissions(
+            PermissionFlagsBits.Administrator
+        ),
 
     async execute(interaction) {
 
-        const modal = new ModalBuilder()
-            .setCustomId("confession_modal")
-            .setTitle("Anonymous Confession");
+        const sub = interaction.options.getSubcommand();
 
-        const confession = new TextInputBuilder()
-            .setCustomId("confession_text")
-            .setLabel("Your confession")
-            .setPlaceholder("Type your confession here...")
-            .setStyle(TextInputStyle.Paragraph)
-            .setRequired(true)
-            .setMaxLength(2000);
+        if (sub === "post") {
 
-        modal.addComponents(
-            new ActionRowBuilder().addComponents(confession)
-        );
+            const modal = require("../handlers/openConfessionModal");
+            return modal(interaction);
 
-        await interaction.showModal(modal);
+        }
+
+        if (sub === "wizard") {
+
+            const wizard = require("../handlers/confessionWizard");
+            return wizard(interaction);
+
+        }
+
     }
 };
