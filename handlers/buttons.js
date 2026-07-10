@@ -132,9 +132,8 @@ if (!guild.modAlertChannel) {
 const modChannel = await interaction.client.channels.fetch(
     guild.modAlertChannel
 );
-            );
 
-            if (modChannel) {
+if (modChannel) {
 
                 const embed = new EmbedBuilder()
                     .setColor(0xE3A262)
